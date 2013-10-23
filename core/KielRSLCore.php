@@ -64,6 +64,13 @@
 					if(file_exists("./db_drivers/".$db_config['driver'].".php")){
 						require_once("./db_drivers/".$db_config['driver'].".php");
 						
+						if(file_exists("./core/interface/data_handler.php")){
+							require_once("./core/interface/data_handler.php");
+						} else{
+							header("HTTP/1.0 500 Internal Server Error");
+							throw new Exception("DB Error", 1);				
+						}
+						
 						$db = new Connector($db_config['host'],$db_config['username'],$db_config['password'],$db_config['name']);
 						$activeClass->setDataHandler($db);
 						$activeClass->getRequestData($method);

@@ -5,16 +5,6 @@
 	interface data_handler
 	{	
 		
-		private $host; 
-		private $username; 
-		private $password; 
-		private $db_name;
-		private $current_table;
-
-		private $query; 
-
-		private $default_query_limit;
-		private $default_query_offset;
 		/**
 		* Allows execution of custom query
 		* @param query - string/query string
@@ -69,7 +59,7 @@
 		* @param data(array) - data to be updated
 		* @return false| object
 		*/
-		public function update($table,data);
+		public function update($table,$data);
 
 		/**
 		* Updates data from the data source
@@ -78,7 +68,7 @@
 		* @param where(array) - fields to be compared
 		* @return false| object
 		*/
-		public function update_where($table,data,$where);
+		public function update_where($table,$data,$where);
 
 
 		/**
