@@ -30,7 +30,7 @@ class User extends Kiel_Controller{
 	{
 
 		echo "hey";
-		$this->response(array('ok'=>'hahaha'),200);
+        $this->response(array('ok'=>'hahaha'),200);
 
 	}
 
