@@ -1,5 +1,5 @@
 <?php
-	class Connector{
+	class Connector implements data_handler{
 		private $host; 
 		private $username; 
 		private $password; 
