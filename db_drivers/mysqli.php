@@ -3,7 +3,8 @@
 		private $host; 
 		private $username; 
 		private $password; 
-		private $db_name; 
+		private $db_name;
+		private $query; 
 		
 		function __construct($h,$uname,$pass,$db_name) {
        		$this->host = $h;
@@ -12,7 +13,7 @@
        		$this->db_name = $db_name;
    		}
 
-		public function load($query_message){
+		private function load($query_message){
 			$message = '';
 			$row_count = 0;
 			$res = array();
@@ -44,7 +45,7 @@
 			return($res);
 		}
 
-		public function post_query($query_message){
+		private function post_query($query_message){
 			$message = '';
 			$row_count = 0;
 			$res = array();
@@ -71,6 +72,16 @@
 			$link->commit();
 			$link->close() or die('no links to close');
 			return($res);
+		}
+
+		public function get($table,$selectables){
+			
+		}
+
+		public function query($query){
+			if($query != null && $query != ""){
+				$this->query = $query;
+			}
 		}
 	
 	}

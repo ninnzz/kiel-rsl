@@ -24,24 +24,27 @@
 	if(!isset($_SERVER['PATH_INFO'])){
 		if($config['index_path_redirect'] != ""){
 			header("location:".$config['index_path_redirect']);
+			exit();
 		} else{
 			header("HTTP/1.0 404 Page Not Found");
 			throw new Exception("The page you are requesting does not exist", 1);
 		}
 	}
 	
+
+
 	$params = explode('/',trim($_SERVER['PATH_INFO'],'/'));
 
 	$object_name = $params[0];
 	$method_name = 'index_'.strtolower($method);
 	
-	if(count($params)>2 && isset($params[1])){
-		$method_name = $params[1].strtolower($method);
+	if(count($params)>1 && isset($params[1])){
+		$method_name = $params[1].'_'.strtolower($method);
 	}
 
-	if(file_exists("./application/{$object_name}.php")){
+	if(file_exists("./application/controller/{$object_name}.php")){
 		require_once("Kiel_Controller.php");
-		require_once("./application/{$object_name}.php");
+		require_once("./application/controller/{$object_name}.php");
 	} else{
 		$method_name = null;
 		header("HTTP/1.0 404 Page Not Found");
@@ -56,23 +59,21 @@
 			 *
 			 */
 			$activeClass = new $object_name();
-
 			/*==== Config setup =====*/
 				if($config['load_db']){
 					if(file_exists("./db_drivers/".$db_config['driver'].".php")){
 						require_once("./db_drivers/".$db_config['driver'].".php");
 						
 						$db = new Connector($db_config['host'],$db_config['username'],$db_config['password'],$db_config['name']);
-						$activeClass->setDB($db);
+						$activeClass->setDataHandler($db);
 						$activeClass->getRequestData($method);
-						$activeClass->$method_name();
+						$response_data = $activeClass->$method_name();
 
 					} else{
 						header("HTTP/1.0 500 Internal Server Error");
 						throw new Exception("DB Error", 1);				
 					}
 				}
-
 			/*==== Config setup end =====*/
 
 		} else{

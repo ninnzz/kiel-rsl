@@ -8,7 +8,7 @@
 	 * production
 	 *
   	 */
-	$start = microtime(true); 
+	$start; 
 	define('ENVIRONMENT', 'development');
 
 	/* == ERROR REPORTING ==
@@ -64,11 +64,9 @@
 	}
 
 
-	header('Content-Type: application/json');
 	try{
+		$start  = microtime(true);
 		require_once("core/KielRSLCore.php");
-
-		$end = (microtime(true) - $start);
 	} catch(Exception $e){
 
 		$end = round((microtime(true) - $start),5);
