@@ -47,8 +47,20 @@
 		*/
 		public function insert($table,$data);
 		
-		
+		/**
+		* Deletes data from the data source
+		* @param table(string) - table/object name
+		* @param where(array) - fields to be compared
+		* @return false| object
+		*/
 		public function delete($table,$where);
+
+		/**
+		* updates data from the data source
+		* @param table(string) - table/object name
+		* @param data(array) - data to be updated
+		* @return false| object
+		*/
 		public function update($table,data);
 
 		/**
@@ -60,6 +72,10 @@
 		*/
 		public function update_where($table,data,$where);
 
+
+		/**
+		* To be followed
+		*/
 		public function update_batch($table, $data=array(),$where=array());
 		public function insert_batch($table, $data);
 	}
