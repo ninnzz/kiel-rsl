@@ -112,22 +112,44 @@
      * @return false| object
      */
 
-    public function include_data($data){
+    private function include_data($data){
         for($i = 0, $j = count($data)-1; $i<$j; $i++)
             $this->query .= $data[$i] . ',';
         $this->query .= $data[$i] . ' ';
     }
 
+    private function include_eq($where, $keyword){
 
+        if($where != null){
+            $this->query .= "$keyword ";
+            while($element = current($where)) {
+
+                is_string($element)?$element="'" . $element . "'":1;
+
+                $this->query .= key($where) . '=' . $element . ' ,';
+                next($where);
+            }
+            $this->query = substr($this->query, 0, $this->query.Length - 1);
+
+            echo $this->query;
+        }
+    }
+
+    private function include_hr($arg1, $arg2, $keyword1, $keyword2){
+        if(!is_null($arg1)){
+            $this->query .= $keyword1 . ' ' . $arg1 . ' ';
+            if(!is_null($arg2))
+                $this->query .= $keyword2 . ' ' . $arg2 . ' ';
+        }
+    }
     /** note, ung ginawa ko is required lahat na may laman. Don't know why, haha */
 
     public function get($table,$data,$offset,$limit,$sort,$order){
         $this->query = "SELECT ";
         $this->include_data($data);
         $this->query .= "FROM " . $table . ' ';
-        $this->query .= "ORDER BY " . $sort . ' ' . $order . ' ';
-        $this->query .= "LIMIT " . $limit . ' ';
-        $this->query .= "OFFSET " . $offset . ' ';
+        $this->include_hr($sort,$order, "ORDER BY", "");
+        $this->include_hr($limit, $offset, "LIMIT", "OFFSET");
 
         echo $this->query;
 
@@ -148,16 +170,13 @@
      */
     public function get_where($table,$data,$where,$offset,$limit,$sort,$order){
         $this->query = "SELECT ";
-        $this->include_data($data);
-        $this->query .= "FROM ";
-        $this->include_data($table);
-        $this->query .= "WHERE ";
-        $this->include_data($where);
-        $this->query .= "ORDER BY " . $sort . ' ' . $order . ' ';
-        $this->query .= "LIMIT " . $limit . ' ';
-        $this->query .= "OFFSET " . $offset . ' ';
+        $this->include_csv($data);
+        $this->query .= "FROM " . $table . ' ';
+        $this->include_eq($where, "WHERE");
+        $this->include_hr($sort,$order, "ORDER BY", "");
+        $this->include_hr($limit, $offset, "LIMIT", "OFFSET");
 
-        return $this->execute();
+//        return $this->execute();
 
     }
 
@@ -170,7 +189,7 @@
     public function insert($table,$data){
         $this->query = "INSERT INTO " . $table . ' ';
         $this->query .= "VALUES( ";
-        $this->include_data($data);
+        $this->include_csv($data);
         $this->query .= ")";
 
         return $this->execute();
@@ -184,8 +203,7 @@
      */
     public function delete($table,$where){
         $this->query = "DELETE FROM " . $table . ' ';
-        $this->query .= "WHERE ";
-        $this->include_data($where);
+        $this->include_eq($where, "WHERE");
 
         return $this->execute();
     }
@@ -198,8 +216,7 @@
      */
     public function update($table,$data){
         $this->query = "UPDATE " . $table . ' ';
-        $this->query .= "SET ";
-        $this->include_data($data);
+        $this->include_eq($data,"SET");
 
         return $this->execute();
     }
@@ -213,10 +230,8 @@
      */
     public function update_where($table,$data,$where){
         $this->query = "UPDATE " . $table . ' ';
-        $this->query .= "SET ";
-        $this->include_data($data);
-        $this->query .= "WHERE ";
-        $this->include_data($data);
+        $this->include_eq($data, "SET");
+        $this->include_eq($where, "WHERE");
 
         return $this->execute();
     }
