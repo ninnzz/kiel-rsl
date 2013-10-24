@@ -5,7 +5,9 @@
 		private $password; 
 		private $db_name;
 		private $query; 
-		
+		private $conn;
+        private $result;
+
 		function __construct($h,$uname,$pass,$db_name) {
        		$this->host = $h;
        		$this->username = $uname;
@@ -74,15 +76,30 @@
 			return($res);
 		}
 
-		public function get($table,$selectables){
-			
-		}
-
-
 // Start of what I am doing
 
 
+    public function execute(){
+        $this->conn = mysqli_connect($this->host,$this->username ,$this->password,$this->db_name) or die('Database Connection Error');
 
+        $this->result = mysqli_query($this->conn,$this->query);
+
+        mysqli_close($this->conn);
+
+        if($this->result === FALSE){
+            return false;
+        }
+
+        return mysqli_fetch_all($this->result, MYSQLI_ASSOC);
+    }
+
+    public function query($query){
+        $message = '';
+        $row_count = 0;
+        $this->query = $query;
+
+        return $this->execute();
+    }
 
     /**
      * Fetches data from the data source
@@ -94,13 +111,27 @@
      * @param order - sort order
      * @return false| object
      */
-    public function query($query){
-        if($query != null && $query != ""){
-            $this->query = $query;
-        }
+
+    public function include_data($data){
+        for($i = 0, $j = count($data)-1; $i<$j; $i++)
+            $this->query .= $data[$i] . ',';
+        $this->query .= $data[$i] . ' ';
     }
 
+
+    /** note, ung ginawa ko is required lahat na may laman. Don't know why, haha */
+
     public function get($table,$data,$offset,$limit,$sort,$order){
+        $this->query = "SELECT ";
+        $this->include_data($data);
+        $this->query .= "FROM " . $table . ' ';
+        $this->query .= "ORDER BY " . $sort . ' ' . $order . ' ';
+        $this->query .= "LIMIT " . $limit . ' ';
+        $this->query .= "OFFSET " . $offset . ' ';
+
+        echo $this->query;
+
+        return $this->execute();
 
     }
 
@@ -116,6 +147,17 @@
      * @return false| object
      */
     public function get_where($table,$data,$where,$offset,$limit,$sort,$order){
+        $this->query = "SELECT ";
+        $this->include_data($data);
+        $this->query .= "FROM ";
+        $this->include_data($table);
+        $this->query .= "WHERE ";
+        $this->include_data($where);
+        $this->query .= "ORDER BY " . $sort . ' ' . $order . ' ';
+        $this->query .= "LIMIT " . $limit . ' ';
+        $this->query .= "OFFSET " . $offset . ' ';
+
+        return $this->execute();
 
     }
 
@@ -126,7 +168,12 @@
      * @return false| object
      */
     public function insert($table,$data){
+        $this->query = "INSERT INTO " . $table . ' ';
+        $this->query .= "VALUES( ";
+        $this->include_data($data);
+        $this->query .= ")";
 
+        return $this->execute();
     }
 
     /**
@@ -136,7 +183,11 @@
      * @return false| object
      */
     public function delete($table,$where){
+        $this->query = "DELETE FROM " . $table . ' ';
+        $this->query .= "WHERE ";
+        $this->include_data($where);
 
+        return $this->execute();
     }
 
     /**
@@ -146,7 +197,11 @@
      * @return false| object
      */
     public function update($table,$data){
-        echo "hi";
+        $this->query = "UPDATE " . $table . ' ';
+        $this->query .= "SET ";
+        $this->include_data($data);
+
+        return $this->execute();
     }
 
     /**
@@ -157,7 +212,13 @@
      * @return false| object
      */
     public function update_where($table,$data,$where){
+        $this->query = "UPDATE " . $table . ' ';
+        $this->query .= "SET ";
+        $this->include_data($data);
+        $this->query .= "WHERE ";
+        $this->include_data($data);
 
+        return $this->execute();
     }
 
 
