@@ -21,7 +21,7 @@
 
 		function __construct(){
 
-			$this->_time = date('Y-m-d H:i:s', time());
+			$this->_time = time();
 		}
 
 		public function setDataHandler($db_connector)

@@ -61,6 +61,7 @@
 			$activeClass = new $object_name();
 			/*==== Config setup =====*/
 				if($config['load_db']){
+
 					if(file_exists("./db_drivers/".$db_config['driver'].".php")){
 						
 						if(file_exists("./core/interface/data_handler.php")){
@@ -71,17 +72,26 @@
 						}
 						
 						require_once("./db_drivers/".$db_config['driver'].".php");
-						$db = new Connector($db_config['host'],$db_config['username'],$db_config['password'],$db_config['name']);
+						$db = new db_handler($db_config['host'],$db_config['username'],$db_config['password'],$db_config['name']);
 						$activeClass->setDataHandler($db);
-						$activeClass->getRequestData($method);
-						$response_data = $activeClass->$method_name();
-
 					} else{
 						header("HTTP/1.0 500 Internal Server Error");
 						throw new Exception("DB Error", 1);				
 					}
+				} else {
+					$method_name = null;
+					header("HTTP/1.0 404 Page Not Found");
+					throw new Exception("Cannot Load DB", 1);				
 				}
 			/*==== Config setup end =====*/
+
+			/*
+			 * Actual call to the function
+			 * Filters the data first using getRequestData
+			 *
+			 */
+			$activeClass->getRequestData($method);
+			$response_data = $activeClass->$method_name();
 
 		} else{
 			$method_name = null;
