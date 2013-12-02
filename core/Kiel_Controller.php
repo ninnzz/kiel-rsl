@@ -22,20 +22,21 @@
 		protected $selected = array();
 
 
-		function __construct()
+		public function __construct()
 		{	
 			$this->_zlib_oc = @ini_get('zlib.output_compression');
-		} 
+		}
 
 		public function load_model($model_name)
 		{
 			if(file_exists("./application/model/{$model_name}.php")){
 				require_once("Kiel_Model.php");
 				require_once("./application/model/{$model_name}.php");
-
+				
 				if(class_exists(ucfirst($model_name))){
 					$mn = ucfirst($model_name);
 					$this->$model_name = new $mn();
+					
 					$this->$model_name->setDataHandler($this->data_handler); 
 				} else{
 					header("HTTP/1.0 500 Internal Server Error");
@@ -59,7 +60,12 @@
 
 		public function checkAuth($access_token)
 		{
-			
+			$this->load_model('auth_model');
+			$res = $this->auth_model->check_access($access_token);
+			if($res['result_count'] !== 1){
+				header("HTTP/1.0 500 Internal Server Error");
+				throw new Exception("Authentication failed. Invalid APP_ID", 1);
+			}
 		}
 
 		public function setDataHandler($db_connector)
@@ -80,9 +86,11 @@
 					$this->xfClean($_POST);
 				break;
 				case 'PUT':
+					parse_str(file_get_contents("php://input"),$_PUT);
 					$this->xfClean($_PUT);
 				break;
 				case 'DELETE':
+					parse_str(file_get_contents("php://input"),$_DELETE);
 					$this->xfClean($_DELETE);
 				break;
 				default:
