@@ -62,6 +62,21 @@
    			return rtrim($str, 'AND');
    		}
 
+   		private function get_insert_clause($data)
+   		{
+			$col = '';
+			$row = '';
+			foreach ($data as $key => $value) {
+   				$col .= $key.', ';
+   				if(gettype($value) == "string"){
+   					$row .= "'{$value}', ";
+   				} else {
+   					$row .= $value.', ';
+   				}
+   			}
+   			return "(".rtrim(trim($col),',').") VALUES(".rtrim(trim($row),',').")";
+   		}
+
 		public function query($query)
 		{
 			$row_count = 0;
@@ -148,7 +163,7 @@
 			return(array('result' => $res, 'result_count'=>$cnt));
 		}
 
-		public function get_where($table=NULL,$data=NULL,$where=NULL,$offset=0,$limit=10,$sort=NULL,$order=NULL,$added='')
+		public function get_where($table=NULL,$data=NULL,$where=NULL,$offset=0,$limit=10,$sort=NULL,$sort_order='desc')
 		{
 
 			$row_count = 0;
@@ -178,18 +193,16 @@
 			}
 			$link->autocommit(FALSE);
 	
-			$query_message = "SELECT {$data} {$added} FROM {$table} {$where}";
+			$query_message = "SELECT {$data} FROM {$table} {$where}";
 
 
-			if($order != NULL){
-				$query_message .= "ORDER BY {$order} desc ";
+			if($sort != NULL){
+				$query_message .= "ORDER BY {$sort} {$sort_order} ";
 			}
 
 			if($offset !== NULL){
 				$query_message .= " LIMIT {$offset}, {$limit} ";
 			}
-
-
 
 			if(!$result = $link->query($query_message)){
 				$err = $link->error;
@@ -219,10 +232,12 @@
 				header("HTTP/1.0 500 Internal Server Error");
     			throw new Exception("Database Error :: Unknown table", 1);
 			}
-			if(!$data){
+			if(!$data || !is_array($data)){
 				header("HTTP/1.0 500 Internal Server Error");
     			throw new Exception("Database Error :: No data to insert", 1);	
 			}
+
+			$data = $this->get_insert_clause($data);
 
 			// $link = mysqli_connect(DBConfig::DB_HOST, DBConfig::DB_USERNAME, DBConfig::DB_PASSWORD, DBConfig::DB_NAME) or die('Database Connection Error');
 			$link = mysqli_connect($this->host,$this->username ,$this->password,$this->db_name) or die('Database Connection Error');
@@ -234,7 +249,7 @@
 			}
 			$link->autocommit(FALSE);
 
-			$query_message = "INSERT into {$table} values({$data});";			
+			$query_message = "INSERT into {$table} {$data};";			
 
 			if(!$result = $link->query($query_message)){
 				$err = $link->error;
@@ -254,6 +269,44 @@
 
 		public function delete($table,$where)
 		{
+			$query_message = '';
+			$row_count = 0;
+		
+			if(!$table){
+				header("HTTP/1.0 500 Internal Server Error");
+    			throw new Exception("Database Error :: Unknown table", 1);
+			}
+			if($where && gettype($where) === 'array' && count($where) != 0){
+				$where = $this->get_where_clause($where);
+			} else {
+				header("HTTP/1.0 500 Internal Server Error");
+    			throw new Exception("Database Error :: Invalid where clause", 1);
+			}
+
+			$link = mysqli_connect($this->host,$this->username ,$this->password,$this->db_name) or die('Database Connection Error');
+			if($link->connect_errno > 0){
+    			$err = $link->connect_error;
+				$link->close() or die('no links to close');
+ 				header("HTTP/1.0 500 Internal Server Error");
+    			throw new Exception("Database Connection Error [" . $err . "]", 1);
+			}
+			$link->autocommit(FALSE);
+
+			$query_message = "DELETE FROM {$table} {$where};";
+			
+
+			if(!$result = $link->query($query_message)){
+				$err = $link->error;
+				$errNo = $link->errno;
+				$affected = $link->affected_rows;
+				$link->close();
+ 				return array('errcode'=>$errNo ,'error'=>$err,'affected_rows'=>$affected);
+			}
+			$res['affected_rows'] = $link->affected_rows;
+			
+			$link->commit();
+			$link->close() or die('no links to close');
+			return($res);
 
 		}
 

@@ -13,7 +13,8 @@
  	 *
  	 * Default value: TRUE
   	 */
-	$config['oauth_access_token_expires'] = 86400;
+	define('REQUEST_TOKEN_EXPIRES',18000); // set to 5 hrs
+	define('ACCESS_TOKEN_EXPIRES',0);
 
 	/*
 	 *
@@ -30,15 +31,21 @@
 	 *	CREATE TABLE oauth_users (username VARCHAR(255) NOT NULL, password VARCHAR(2000), first_name VARCHAR(255), last_name VARCHAR(255),email VARCHAR(255) NOT NULL, active boolean DEFAULT false, PRIMARY KEY (username));
 	 */
 
-
+	/*
+	 * ===== SCOPES DECLARATION =========
+	 * insert into scopes values('web.view','Basic web access');
+	 * insert into scopes values('mobile.view','Basic mobile access');
+	 * insert into scopes values('users.add','Add users to the system');
+	 * insert into scopes values('users.edit','Edit users in the system');
+	 * insert into scopes values('users.delete','Delete users in the system');
+	 * insert into scopes values('users.view','Can view users in the system');
+	 */
 
 	define('OAUTH_CLIENTS_TABLE','oauth_clients');
 	define('OAUTH_ACCESS_TOKEN_TABLE','oauth_access_tokens');
 	define('OAUTH_REQUEST_TOKEN_TABLE','oauth_request_tokens');
 	define('OAUTH_USERS','oauth_users');
 	define('OAUTH_SCOPES','oauth_scopes');
-
-
 
 
 	

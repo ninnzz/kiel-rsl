@@ -22,8 +22,9 @@
 		protected $selected = array();
 
 
-		public function __construct()
+		public function __construct($args)
 		{	
+			$this->setDataHandler($args);
 			$this->_zlib_oc = @ini_get('zlib.output_compression');
 		}
 
@@ -51,9 +52,21 @@
 		public function required_fields($required,$fields)
 		{
 			foreach($required as $req){
-				if(!isset($fields[$req])){
+				if(!isset($fields[$req]) ){
+					header('Content-Type: application/json');
 					header("HTTP/1.0 500 Internal Server Error");
-					throw new Exception("The following fields are required: {$req}", 1);			
+					throw new Exception("The following field is required or should not be empty: {$req}", 1);			
+				}
+			}
+		}
+
+		protected function has_scopes($scope,$access_token)
+		{
+			$this->load_model('auth_model');
+			$sc = $this->auth_model->get_scopes($access_token);
+			foreach ($scope as $s) {
+				if(!in_array($s, $sc)){
+					throw new Exception("Insufficient permission for access token. Access token might be expired.", 1);
 				}
 			}
 		}
@@ -63,6 +76,7 @@
 			$this->load_model('auth_model');
 			$res = $this->auth_model->check_access($access_token);
 			if($res['result_count'] !== 1){
+				header('Content-Type: application/json');
 				header("HTTP/1.0 500 Internal Server Error");
 				throw new Exception("Authentication failed. Invalid APP_ID", 1);
 			}
@@ -94,6 +108,7 @@
 					$this->xfClean($_DELETE);
 				break;
 				default:
+					header('Content-Type: application/json');
 					header("HTTP/1.0 500 Internal Server Error");
 					throw new Exception("Invalid method", 1);
 					break;
@@ -109,7 +124,7 @@
 		{
 			$tmp = array();
 			foreach ($args as $key => $value){
-			    $tmp[$key] =  strip_tags(filter_var($value,FILTER_SANITIZE_ENCODED));
+			    $tmp[$key] =  strip_tags(filter_var($value,FILTER_SANITIZE_STRING));
 				array_push($this->selected,$key);
 			}
 

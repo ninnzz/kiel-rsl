@@ -48,17 +48,13 @@
 	} else{
 		$method_name = null;
 		header("HTTP/1.0 404 Page Not Found");
+		header('Content-Type: application/json');
 		throw new Exception("Unknown object", 1);
 	}
 
 	$object_name = ucfirst(strtolower($object_name));
 	if(class_exists($object_name)){
 		if(method_exists($object_name, $method_name)){
-			/*
-			 * Instantiates the class object 
-			 *
-			 */
-			$activeClass = new $object_name();
 			/*==== Config setup =====*/
 				if($config['load_db']){
 
@@ -73,7 +69,7 @@
 						
 						require_once("./db_drivers/".$db_config['driver'].".php");
 						$db = new db_handler($db_config['host'],$db_config['username'],$db_config['password'],$db_config['name']);
-						$activeClass->setDataHandler($db);
+						
 					} else{
 						header("HTTP/1.0 500 Internal Server Error");
 						throw new Exception("DB Error", 1);				
@@ -85,21 +81,31 @@
 				}
 			/*==== Config setup end =====*/
 
+
+			/*
+			 * Instantiates the class object 
+			 *
+			 */
+			$activeClass = new $object_name($db);
+			
+
 			/*
 			 * Actual call to the function
 			 * Filters the data first using getRequestData
 			 *
 			 */
 			$activeClass->getRequestData($method);
-			$response_data = $activeClass->$method_name();
+			$activeClass->$method_name();
 
 		} else{
 			$method_name = null;
+			header('Content-Type: application/json');
 			header("HTTP/1.0 404 Page Not Found");
 			throw new Exception("Unknown method", 1);				
 		}
 	} else{
 		$method_name = 'index';
+		header('Content-Type: application/json');
 		header("HTTP/1.0 404 Page Not Found");
 		throw new Exception("Unknown object", 1);	
 	}
