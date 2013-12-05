@@ -67,9 +67,6 @@ class Users extends Kiel_Controller{
 		unset($user['password']);
 		$this->response(array('status'=>'Success','data'=>$user),200);
 	}
-
-
-
 }
 
 ?>
